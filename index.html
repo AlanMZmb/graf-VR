@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Bosque Maldito VR</title>
+
+    <style>
+
+        body{
+            margin:0;
+            overflow:hidden;
+            font-family:Arial;
+            background:black;
+        }
+
+        #pantallaInicio{
+
+            position:absolute;
+
+            width:100%;
+            height:100%;
+
+            background:linear-gradient(
+                to bottom,
+                #000000,
+                #08110d
+            );
+
+            display:flex;
+
+            flex-direction:column;
+
+            justify-content:center;
+
+            align-items:center;
+
+            color:white;
+
+            z-index:10;
+
+            text-align:center;
+
+        }
+
+        h1{
+            font-size:4rem;
+        }
+
+        p{
+            width:60%;
+            line-height:1.6;
+        }
+
+        button{
+
+            padding:15px 40px;
+
+            font-size:1.2rem;
+
+            border:none;
+
+            border-radius:10px;
+
+            background:#1d7c4d;
+
+            color:white;
+
+            cursor:pointer;
+
+        }
+
+        #contador{
+
+            position:absolute;
+
+            top:20px;
+            left:20px;
+
+            color:white;
+
+            font-size:24px;
+
+            z-index:5;
+
+            background:rgba(0,0,0,0.5);
+
+            padding:10px 20px;
+
+            border-radius:10px;
+
+        }
+
+    </style>
+
+
+    <!-- IMPORT MAP -->
+    <script type="importmap">
+
+    {
+        "imports": {
+
+            "three":
+            "https://unpkg.com/three@0.160.0/build/three.module.js",
+
+            "three/addons/":
+            "https://unpkg.com/three@0.160.0/examples/jsm/"
+
+        }
+    }
+
+    </script>
+
+</head>
+
+<body>
+
+    <div id="pantallaInicio">
+
+        <h1>BOSQUE MALDITO VR</h1>
+
+        <p>
+            Encuentra los orbes mágicos
+            escondidos en el bosque.
+        </p>
+
+        <button id="btnIniciar">
+            Iniciar Juego
+        </button>
+
+    </div>
+
+    <div id="contador">
+
+        Orbes: 0 / 10
+
+    </div>
+
+
+    <script type="module" src="main.js"></script>
+
+</body>
+
+</html>
