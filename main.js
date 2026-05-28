@@ -56,11 +56,21 @@ new THREE.Fog(
 
     0x050505,
 
-    20,
+    15,
 
-    100
+    80
 
 );
+
+
+// ======================================
+// PLAYER RIG
+// ======================================
+
+const playerRig =
+new THREE.Group();
+
+scene.add(playerRig);
 
 
 // ======================================
@@ -70,7 +80,7 @@ new THREE.Fog(
 const player =
 new THREE.Group();
 
-scene.add(player);
+playerRig.add(player);
 
 
 // ======================================
@@ -97,7 +107,7 @@ camera.position.set(
     0
 );
 
-player.position.set(
+playerRig.position.set(
     0,
     0,
     10
@@ -136,7 +146,7 @@ renderer.toneMapping =
 THREE.ACESFilmicToneMapping;
 
 renderer.toneMappingExposure =
-1;
+0.9;
 
 renderer.setPixelRatio(
 
@@ -148,8 +158,7 @@ renderer.setPixelRatio(
 );
 
 document.body.appendChild(
-    renderer.domElement
-);
+    renderer.domElement);
 
 
 // ======================================
@@ -232,7 +241,7 @@ new THREE.AmbientLight(
 
     0xffffff,
 
-    0.7
+    0.5
 
 );
 
@@ -246,7 +255,7 @@ new THREE.DirectionalLight(
 
     0xaabbff,
 
-    1
+    0.8
 
 );
 
@@ -302,7 +311,7 @@ audioLoader.load(
 
 
 // ======================================
-// TEXTURA PISO
+// TEXTURAS
 // ======================================
 
 const textureLoader =
@@ -322,13 +331,9 @@ grassTexture.wrapT =
 THREE.RepeatWrapping;
 
 grassTexture.repeat.set(
-    8,
-    8
+    20,
+    20
 );
-
-grassTexture.anisotropy =
-renderer.capabilities
-.getMaxAnisotropy();
 
 
 // ======================================
@@ -338,8 +343,8 @@ renderer.capabilities
 const floorGeometry =
 new THREE.PlaneGeometry(
 
-    300,
-    300,
+    400,
+    400,
 
     20,
     20
@@ -370,6 +375,80 @@ floor.rotation.x =
 scene.add(
     floor
 );
+
+
+// ======================================
+// COLLIDERS
+// ======================================
+
+const colliders = [];
+
+
+// ======================================
+// CHECK COLLISION
+// ======================================
+
+function checkCollision(nextPosition){
+
+    for(const collider of colliders){
+
+        if(collider.type === 'box'){
+
+            const playerBox =
+            new THREE.Box3(
+
+                new THREE.Vector3(
+
+                    nextPosition.x - 0.5,
+                    0,
+                    nextPosition.z - 0.5
+
+                ),
+
+                new THREE.Vector3(
+
+                    nextPosition.x + 0.5,
+                    2,
+                    nextPosition.z + 0.5
+
+                )
+
+            );
+
+
+            if(
+                playerBox.intersectsBox(
+                    collider.box
+                )
+            ){
+
+                return true;
+
+            }
+
+        }
+
+        else{
+
+            const distance =
+
+            nextPosition.distanceTo(
+                collider.position
+            );
+
+            if(distance < collider.radius){
+
+                return true;
+
+            }
+
+        }
+
+    }
+
+    return false;
+
+}
 
 
 // ======================================
@@ -408,10 +487,10 @@ function applySimpleMaterial(
 
 
 // ======================================
-// ARBOLES
+// MUCHOS ARBOLES
 // ======================================
 
-for(let i = 0; i < 8; i++){
+for(let i = 0; i < 60; i++){
 
     loader.load(
 
@@ -425,30 +504,41 @@ for(let i = 0; i < 8; i++){
                 0.03
             );
 
+            const x =
+            Math.random() * 220 - 110;
+
+            const z =
+            Math.random() * 220 - 110;
+
             object.position.set(
-
-                Math.random() * 120 - 60,
-
+                x,
                 0,
-
-                Math.random() * 120 - 60
-
+                z
             );
 
             object.rotation.y =
             Math.random() * Math.PI;
 
             applySimpleMaterial(
-
                 object,
-
                 0x224422
-
             );
 
-            scene.add(
-                object
-            );
+            scene.add(object);
+
+
+            colliders.push({
+
+                position:
+                new THREE.Vector3(
+                    x,
+                    0,
+                    z
+                ),
+
+                radius:1.5
+
+            });
 
         }
 
@@ -461,7 +551,7 @@ for(let i = 0; i < 8; i++){
 // ROCAS
 // ======================================
 
-for(let i = 0; i < 5; i++){
+for(let i = 0; i < 8; i++){
 
     loader.load(
 
@@ -475,27 +565,38 @@ for(let i = 0; i < 5; i++){
                 1
             );
 
+            const x =
+            Math.random() * 120 - 60;
+
+            const z =
+            Math.random() * 120 - 60;
+
             object.position.set(
-
-                Math.random() * 50 - 25,
-
+                x,
                 0,
-
-                Math.random() * 50 - 25
-
+                z
             );
 
             applySimpleMaterial(
-
                 object,
-
                 0x666666
-
             );
 
-            scene.add(
-                object
-            );
+            scene.add(object);
+
+
+            const box =
+            new THREE.Box3()
+            .setFromObject(object);
+
+
+            colliders.push({
+
+                box:box,
+
+                type:'box'
+
+            });
 
         }
 
@@ -519,9 +620,9 @@ loader.load(
         ghost = object;
 
         ghost.scale.set(
-            0.05,
-            0.05,
-            0.05
+            0.035,
+            0.035,
+            0.035
         );
 
         ghost.position.set(
@@ -582,16 +683,34 @@ new THREE.Sprite(
     scoreMaterial
 );
 
+
+// ======================================
+// UI POSITION
+// ======================================
+
 scoreSprite.position.set(
+
     0,
-    1.2,
-    -2
+
+    0.25,
+
+    -1.2
+
 );
 
+
+// ======================================
+// UI SIZE
+// ======================================
+
 scoreSprite.scale.set(
-    1.5,
+
     0.7,
+
+    0.3,
+
     1
+
 );
 
 camera.add(scoreSprite);
@@ -693,11 +812,11 @@ for(let i = 0; i < 10; i++){
 
     orb.position.set(
 
-        Math.random() * 80 - 40,
+        Math.random() * 140 - 70,
 
         1.2,
 
-        Math.random() * 80 - 40
+        Math.random() * 140 - 70
 
     );
 
@@ -749,27 +868,68 @@ document.addEventListener(
 
 function moveDesktop(){
 
+    if(gameOver)
+        return;
+
     const speed = 0.15;
+
+    const nextPosition =
+    playerRig.position.clone();
+
+    const forward =
+    new THREE.Vector3(
+        0,
+        0,
+        -1
+    );
+
+    forward.applyQuaternion(
+        playerRig.quaternion
+    );
+
+    forward.y = 0;
+
+    forward.normalize();
+
+
+    const right =
+    new THREE.Vector3(
+        1,
+        0,
+        0
+    );
+
+    right.applyQuaternion(
+        playerRig.quaternion
+    );
+
+    right.y = 0;
+
+    right.normalize();
+
 
     if(keys['w']){
 
-        player.translateZ(
-            -speed
+        nextPosition.addScaledVector(
+            forward,
+            speed
         );
 
     }
 
     if(keys['s']){
 
-        player.translateZ(
-            speed
+        nextPosition.addScaledVector(
+            forward,
+            -speed
         );
 
     }
 
     if(keys['a']){
 
-        player.translateX(
+        nextPosition.addScaledVector(
+            right,
             -speed
         );
 
@@ -777,8 +937,22 @@ function moveDesktop(){
 
     if(keys['d']){
 
-        player.translateX(
+        nextPosition.addScaledVector(
+            right,
             speed
+        );
+
+    }
+
+
+    if(
+        !checkCollision(
+            nextPosition
+        )
+    ){
+
+        playerRig.position.copy(
+            nextPosition
         );
 
     }
@@ -795,10 +969,34 @@ new THREE.Clock();
 
 
 // ======================================
-// SNAP TURN
+// GAME OVER
 // ======================================
 
-let canSnap = true;
+let gameOver = false;
+
+
+// ======================================
+// SPRINT
+// ======================================
+
+let sprintMultiplier = 1;
+
+
+// ======================================
+// END GAME
+// ======================================
+
+function endGame(message){
+
+    gameOver = true;
+
+    updateScoreUI(
+        message
+    );
+
+    ambientSound.stop();
+
+}
 
 
 // ======================================
@@ -806,6 +1004,9 @@ let canSnap = true;
 // ======================================
 
 function moveVR(dt){
+
+    if(gameOver)
+        return;
 
     const session =
     renderer.xr.getSession();
@@ -821,9 +1022,7 @@ function moveVR(dt){
         source.gamepad.axes;
 
 
-        // ======================================
         // LEFT STICK
-        // ======================================
 
         if(source.handedness === 'left'){
 
@@ -851,18 +1050,35 @@ function moveVR(dt){
                 y = 0;
 
 
-            const xrCamera =
-            renderer.xr.getCamera(camera);
+            // SPRINT
 
-            const realCamera =
-            xrCamera.cameras[0];
+            const trigger =
+            source.gamepad.buttons[0];
+
+
+            if(
+                trigger &&
+                trigger.value > 0.5
+            ){
+
+                sprintMultiplier = 2;
+
+            }else{
+
+                sprintMultiplier = 1;
+
+            }
 
 
             const forward =
-            new THREE.Vector3();
+            new THREE.Vector3(
+                0,
+                0,
+                -1
+            );
 
-            realCamera.getWorldDirection(
-                forward
+            forward.applyQuaternion(
+                playerRig.quaternion
             );
 
             forward.y = 0;
@@ -871,28 +1087,30 @@ function moveVR(dt){
 
 
             const right =
-            new THREE.Vector3();
-
-            right.crossVectors(
-
-                forward,
-
-                new THREE.Vector3(
-                    0,
-                    1,
-                    0
-                )
-
+            new THREE.Vector3(
+                1,
+                0,
+                0
             );
+
+            right.applyQuaternion(
+                playerRig.quaternion
+            );
+
+            right.y = 0;
 
             right.normalize();
 
 
             const moveSpeed =
-            4.0;
+            4.0 * sprintMultiplier;
 
 
-            player.position.addScaledVector(
+            const nextPosition =
+            playerRig.position.clone();
+
+
+            nextPosition.addScaledVector(
 
                 forward,
 
@@ -902,7 +1120,7 @@ function moveVR(dt){
 
             );
 
-            player.position.addScaledVector(
+            nextPosition.addScaledVector(
 
                 right,
 
@@ -912,12 +1130,23 @@ function moveVR(dt){
 
             );
 
+
+            if(
+                !checkCollision(
+                    nextPosition
+                )
+            ){
+
+                playerRig.position.copy(
+                    nextPosition
+                );
+
+            }
+
         }
 
 
-        // ======================================
         // RIGHT STICK
-        // ======================================
 
         if(source.handedness === 'right'){
 
@@ -931,36 +1160,19 @@ function moveVR(dt){
             }
 
 
-            if(
-                canSnap &&
-                Math.abs(turn) > 0.8
-            ){
-
-                const angle =
-                THREE.MathUtils.degToRad(
-                    45
-                );
-
-                if(turn > 0){
-
-                    player.rotation.y -= angle;
-
-                }else{
-
-                    player.rotation.y += angle;
-
-                }
-
-                canSnap = false;
-
-            }
+            if(Math.abs(turn) < 0.15)
+                turn = 0;
 
 
-            if(Math.abs(turn) < 0.2){
+            const rotationSpeed =
+            2.5;
 
-                canSnap = true;
 
-            }
+            playerRig.rotation.y -=
+
+                turn *
+                rotationSpeed *
+                dt;
 
         }
 
@@ -970,10 +1182,13 @@ function moveVR(dt){
 
 
 // ======================================
-// DETECTAR ORBES
+// ORBES
 // ======================================
 
 function checkOrbs(){
+
+    if(gameOver)
+        return;
 
     orbs.forEach((orb)=>{
 
@@ -982,7 +1197,7 @@ function checkOrbs(){
 
         const distance =
 
-        player.position
+        playerRig.position
         .distanceTo(
 
             orb.position
@@ -1001,6 +1216,15 @@ function checkOrbs(){
 
             );
 
+
+            if(collected >= 10){
+
+                endGame(
+                    'GANASTE'
+                );
+
+            }
+
         }
 
     });
@@ -1009,14 +1233,7 @@ function checkOrbs(){
 
 
 // ======================================
-// GAME OVER
-// ======================================
-
-let gameOver = false;
-
-
-// ======================================
-// FANTASMA IA
+// IA FANTASMA
 // ======================================
 
 function animateGhost(dt){
@@ -1028,19 +1245,21 @@ function animateGhost(dt){
     const distance =
 
     ghost.position.distanceTo(
-        player.position
+        playerRig.position
     );
 
 
     ghost.lookAt(
-        player.position
+        playerRig.position
     );
 
 
-    let speed = 0.5;
+    // MUCHO MAS RAPIDO
+
+    let speed = 2.2;
 
     speed +=
-    collected * 0.15;
+    collected * 0.35;
 
 
     const direction =
@@ -1048,7 +1267,7 @@ function animateGhost(dt){
 
     direction.subVectors(
 
-        player.position,
+        playerRig.position,
 
         ghost.position
 
@@ -1077,17 +1296,11 @@ function animateGhost(dt){
         ) * 0.5;
 
 
-    // GAME OVER
-
     if(distance < 2){
 
-        gameOver = true;
-
-        updateScoreUI(
+        endGame(
             'GAME OVER'
         );
-
-        ambientSound.stop();
 
     }
 
